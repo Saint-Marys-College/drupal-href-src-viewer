@@ -90,7 +90,7 @@ function printMatches($string, $context)
   if (strpos($string, '/') === 0) {
     $classes[] = 'relative';
   } else {
-    if (strpos($string, 'saintmarys.edu') === false) {
+    if (strpos($string, 'saintmarys.edu') === false && (strpos($string, 'http') === 0 )) {
       $classes[] = 'offsite';
     }
   }
