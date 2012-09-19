@@ -39,7 +39,7 @@ function fetchFromDB($databaseName)
     printf("Connect failed: %s\n", mysqli_connect_error());
     exit;
   }
-  $result = $mysqli->query("SELECT nid, body FROM node_revisions WHERE body REGEXP '<img.*\.jpg.*>' OR body REGEXP '<a.*/files/.*>' OR body REGEXP '<img.*\.png.*>' OR body REGEXP '<img.*\.gif.*>' ORDER BY nid");
+  $result = $mysqli->query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON n.vid = nr.vid WHERE nr.body REGEXP '<img.*\.jpg.*>' OR nr.body REGEXP '<a.*/files/.*>' OR nr.body REGEXP '<img.*\.png.*>' OR nr.body REGEXP '<img.*\.gif.*>' ORDER BY nr.nid");
   if (!$result) {
     printf("Query failed: %s\n", $mysqli->error);
     exit;
