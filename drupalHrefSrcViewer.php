@@ -118,8 +118,8 @@ function processRow($row, $databaseName, $hostnamePath)
   printRowStart($hostnamePath, $row['nid']);
   $hrefMatches = array();
   $srcMatches  = array();
-  preg_match_all('/href=[\"\']((?:https?:\/\/)?[^\"\']*?\.[^\"\']{3,4})?\/?[\"\']/', $row['body'], $hrefMatches);
-  preg_match_all('/src=[\"\']((?:https?:\/\/)?[^\"\']*?\.[^\"\']{3,4})?\/?[\"\']/', $row['body'], $srcMatches);
+  preg_match_all('/href=[\"\']([^\"\']*)[\"\']/', $row['body'], $hrefMatches);
+  preg_match_all('/src=[\"\']([^\"\']*)[\"\']/', $row['body'], $srcMatches);
   if (!empty($hrefMatches[1])) {
     echo '<h2>href</h2><ul>';
     foreach ($hrefMatches[1] as $string) {
