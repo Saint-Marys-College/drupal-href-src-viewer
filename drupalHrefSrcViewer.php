@@ -9,6 +9,24 @@ function printFilesAndImagesFromDB($databaseName)
   printTableEnd();
 }
 
+function fetchFromDBAjax($databaseName, $hostnamePath, $nodeId)
+{
+  $link = mysql_connect('localhost','','');
+  mysql_select_db($databaseName);
+  if (!$link) {
+    die("Connect failed:" . mysql_error());
+  }
+  $result = mysql_query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON nr.vid = n.vid  WHERE nr.nid = $nodeId");
+  if (!$result) {
+    die("Query failed:". mysql_error());
+  }
+  while ($row = mysql_fetch_assoc($result)) {
+    $rows[]=$row;
+  }
+  mysql_close();
+  return processRows($rows,$hostnamePath, $databaseName);
+}
+
 function fetchFromDB($databaseName)
 {
   $link = mysql_connect('localhost','','');
@@ -44,9 +62,9 @@ function printTableEnd()
   echo '</tbody></table>';
 }
 
-function printRowStart($hostnamePath, $nid)
+function printRowStart($databaseName, $hostnamePath, $nid)
 {
-  echo "<tr><td><a href=\"http://$hostnamePath/node/$nid\">$nid</a></td><td>";
+  echo "<tr><td><a href=\"http://$hostnamePath/node/$nid\" target=\"_blank\">$nid</a><br/><a class=\"ajaxRefresh\" href=\"http://".$_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF']."?ajax=1&databaseName=".$databaseName."&hostnamePath=".$hostnamePath."&nid=".$nid."\">Refresh</a></td><td>";
 }
 
 function printRowEnd()
@@ -91,7 +109,7 @@ function printMatches($string, $context)
 
 function processRow($row, $databaseName, $hostnamePath)
 {
-  printRowStart($hostnamePath, $row['nid']);
+  printRowStart($databaseName, $hostnamePath, $row['nid']);
   $hrefMatches = array();
   $srcMatches  = array();
   preg_match_all('/href=[\"\']([^\"\']*)[\"\']/', $row['body'], $hrefMatches);
@@ -112,6 +130,9 @@ function processRow($row, $databaseName, $hostnamePath)
   }
   printRowEnd();
 }
+if ($_GET['ajax'] == 1) {
+  echo fetchFromDBAjax($_GET['databaseName'], $_GET['hostnamePath'], $_GET['nid']);
+} else {
 ?>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
@@ -175,8 +196,24 @@ function processRow($row, $databaseName, $hostnamePath)
 ?>
 <script type="text/javascript">
   $(function() {
-    $("tr:odd").addClass("odd");
+    $.ajaxSetup({ cache: false });
+    function restripeTables() {
+      $('tr').removeClass('odd');
+      $('tr:odd').addClass('odd');
+    }
+    $('tr:odd').addClass('odd');
+    $('body').on('click', 'a.ajaxRefresh', function(e) {
+      var $tr = $(this).parents('tr');
+      $.get(this.href, function(data) {
+        $tr.replaceWith(data);
+        restripeTables();
+      });
+      return false;
+    });
   });
 </script>
   </body>
 </html>
+<?php
+}
+?>
