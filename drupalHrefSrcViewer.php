@@ -34,11 +34,7 @@ function fetchFromDB($databaseName)
   if (!$link) {
     die("Connect failed:" . mysql_error());
   }
-<<<<<<< HEAD
-  $result = $mysqli->query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON n.vid = nr.vid WHERE nr.body REGEXP '<img.*\.jpg.*>' OR nr.body REGEXP '<a.*/files/.*>' OR nr.body REGEXP '<img.*\.png.*>' OR nr.body REGEXP '<img.*\.gif.*>' ORDER BY nr.nid");
-=======
   $result = mysql_query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON n.vid = nr.vid WHERE nr.body REGEXP '<img.*\.jpg.*>' OR nr.body REGEXP '<a.*/files/.*>' OR nr.body REGEXP '<img.*\.png.*>' OR nr.body REGEXP '<img.*\.gif.*>' ORDER BY nr.nid");
->>>>>>> release/2.0
   if (!$result) {
     die("Query failed:". mysql_error());
   }
@@ -218,9 +214,6 @@ if ($_GET['ajax'] == 1) {
 </script>
   </body>
 </html>
-<<<<<<< HEAD
-=======
 <?php
 }
 ?>
->>>>>>> release/2.0
