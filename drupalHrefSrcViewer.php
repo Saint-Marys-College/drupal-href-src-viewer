@@ -11,20 +11,19 @@ function printFilesAndImagesFromDB($databaseName)
 
 function fetchFromDB($databaseName)
 {
-  $mysqli = new mysqli('localhost', '', '', $databaseName);
-  if (mysqli_connect_errno()) {
-    printf("Connect failed: %s\n", mysqli_connect_error());
-    exit;
+  $link = mysql_connect('localhost','','');
+  mysql_select_db($databaseName);
+  if (!$link) {
+    die("Connect failed:" . mysql_error());
   }
-  $result = $mysqli->query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON n.vid = nr.vid WHERE nr.body REGEXP '<img.*\.jpg.*>' OR nr.body REGEXP '<a.*/files/.*>' OR nr.body REGEXP '<img.*\.png.*>' OR nr.body REGEXP '<img.*\.gif.*>' ORDER BY nr.nid");
+  $result = mysql_query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON n.vid = nr.vid WHERE nr.body REGEXP '<img.*\.jpg.*>' OR nr.body REGEXP '<a.*/files/.*>' OR nr.body REGEXP '<img.*\.png.*>' OR nr.body REGEXP '<img.*\.gif.*>' ORDER BY nr.nid");
   if (!$result) {
-    printf("Query failed: %s\n", $mysqli->error);
-    exit;
+    die("Query failed:". mysql_error());
   }
-  while ($row = $result->fetch_assoc()) {
+  while ($row = mysql_fetch_assoc($result)) {
     $rows[]=$row;
   }
-  $mysqli->close();
+  mysql_close();
   return $rows;
 }
 
