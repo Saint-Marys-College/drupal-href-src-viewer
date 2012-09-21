@@ -1,28 +1,5 @@
 <?php
-  // header("Content-Type: text/plain");
-?>
-<!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
-        <link rel="stylesheet" href="style.css" type="text/css" />
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-    </head>
-    <body>
-        <!--[if lt IE 7]>
-            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
-        <![endif]-->
-
-        <!-- Add your site or application content here -->
-<?php
-function printFilesAndImagesFromDB(array $databaseName)
+function printFilesAndImagesFromDB($databaseName)
 {
   $hostnamePath = current($databaseName);
   $databaseName = key($databaseName);
@@ -32,22 +9,43 @@ function printFilesAndImagesFromDB(array $databaseName)
   printTableEnd();
 }
 
-function fetchFromDB($databaseName)
+function fetchFromDBAjax($databaseName, $hostnamePath, $nodeId)
 {
-  $mysqli = new mysqli('localhost', '', '', $databaseName);
-  if (mysqli_connect_errno()) {
-    printf("Connect failed: %s\n", mysqli_connect_error());
-    exit;
+  $link = mysql_connect('localhost','','');
+  mysql_select_db($databaseName);
+  if (!$link) {
+    die("Connect failed:" . mysql_error());
   }
-  $result = $mysqli->query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON n.vid = nr.vid WHERE nr.body REGEXP '<img.*\.jpg.*>' OR nr.body REGEXP '<a.*/files/.*>' OR nr.body REGEXP '<img.*\.png.*>' OR nr.body REGEXP '<img.*\.gif.*>' ORDER BY nr.nid");
+  $result = mysql_query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON nr.vid = n.vid  WHERE nr.nid = $nodeId");
   if (!$result) {
-    printf("Query failed: %s\n", $mysqli->error);
-    exit;
+    die("Query failed:". mysql_error());
   }
-  while ($row = $result->fetch_assoc()) {
+  while ($row = mysql_fetch_assoc($result)) {
     $rows[]=$row;
   }
-  $mysqli->close();
+  mysql_close();
+  return processRows($rows,$hostnamePath, $databaseName);
+}
+
+function fetchFromDB($databaseName)
+{
+  $link = mysql_connect('localhost','','');
+  mysql_select_db($databaseName);
+  if (!$link) {
+    die("Connect failed:" . mysql_error());
+  }
+<<<<<<< HEAD
+  $result = $mysqli->query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON n.vid = nr.vid WHERE nr.body REGEXP '<img.*\.jpg.*>' OR nr.body REGEXP '<a.*/files/.*>' OR nr.body REGEXP '<img.*\.png.*>' OR nr.body REGEXP '<img.*\.gif.*>' ORDER BY nr.nid");
+=======
+  $result = mysql_query("SELECT nr.nid, nr.body FROM node_revisions nr RIGHT JOIN node n ON n.vid = nr.vid WHERE nr.body REGEXP '<img.*\.jpg.*>' OR nr.body REGEXP '<a.*/files/.*>' OR nr.body REGEXP '<img.*\.png.*>' OR nr.body REGEXP '<img.*\.gif.*>' ORDER BY nr.nid");
+>>>>>>> release/2.0
+  if (!$result) {
+    die("Query failed:". mysql_error());
+  }
+  while ($row = mysql_fetch_assoc($result)) {
+    $rows[]=$row;
+  }
+  mysql_close();
   return $rows;
 }
 
@@ -68,9 +66,9 @@ function printTableEnd()
   echo '</tbody></table>';
 }
 
-function printRowStart($hostnamePath, $nid)
+function printRowStart($databaseName, $hostnamePath, $nid)
 {
-  echo "<tr><td><a href=\"http://$hostnamePath/node/$nid\">$nid</a></td><td>";
+  echo "<tr><td><a href=\"http://$hostnamePath/node/$nid\" target=\"_blank\">$nid</a><br/><a class=\"ajaxRefresh\" href=\"http://".$_SERVER['SERVER_NAME'].$_SERVER['PHP_SELF']."?ajax=1&databaseName=".$databaseName."&hostnamePath=".$hostnamePath."&nid=".$nid."\">Refresh</a></td><td>";
 }
 
 function printRowEnd()
@@ -90,7 +88,7 @@ function printMatches($string, $context)
   if (strpos($string, '/') === 0) {
     $classes[] = 'relative';
   } else {
-    if (strpos($string, 'saintmarys.edu') === false) {
+    if (strpos($string, 'saintmarys.edu') === false && (strpos($string, 'http') === 0 )) {
       $classes[] = 'offsite';
     }
   }
@@ -115,11 +113,11 @@ function printMatches($string, $context)
 
 function processRow($row, $databaseName, $hostnamePath)
 {
-  printRowStart($hostnamePath, $row['nid']);
+  printRowStart($databaseName, $hostnamePath, $row['nid']);
   $hrefMatches = array();
   $srcMatches  = array();
-  preg_match_all('/href=[\"\']((?:https?:\/\/)?[^\"\']*?\.[^\"\']{3,4})?\/?[\"\']/', $row['body'], $hrefMatches);
-  preg_match_all('/src=[\"\']((?:https?:\/\/)?[^\"\']*?\.[^\"\']{3,4})?\/?[\"\']/', $row['body'], $srcMatches);
+  preg_match_all('/href=[\"\']([^\"\']*)[\"\']/', $row['body'], $hrefMatches);
+  preg_match_all('/src=[\"\']([^\"\']*)[\"\']/', $row['body'], $srcMatches);
   if (!empty($hrefMatches[1])) {
     echo '<h2>href</h2><ul>';
     foreach ($hrefMatches[1] as $string) {
@@ -136,7 +134,30 @@ function processRow($row, $databaseName, $hostnamePath)
   }
   printRowEnd();
 }
+if ($_GET['ajax'] == 1) {
+  echo fetchFromDBAjax($_GET['databaseName'], $_GET['hostnamePath'], $_GET['nid']);
+} else {
 ?>
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="style.css" type="text/css" />
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
 <table border="1">
   <thead>
     <tr>
@@ -169,18 +190,37 @@ function processRow($row, $databaseName, $hostnamePath)
 </table>
 
 <?php
-printFilesAndImagesFromDB(array('www3drupal01'=>'www3.saintmarys.edu',));
-printFilesAndImagesFromDB(array('campaign'=>'www3.saintmarys.edu/campaign-steering',));
-printFilesAndImagesFromDB(array('commencement'=>'www3.saintmarys.edu/commencement-experience',));
-printFilesAndImagesFromDB(array('library'=>'www3.saintmarys.edu/library',));
-printFilesAndImagesFromDB(array('quest'=>'www3.saintmarys.edu/quest',));
-printFilesAndImagesFromDB(array('tickets'=>'www3.saintmarys.edu/tickets',));
-printFilesAndImagesFromDB(array('trustees'=>'www3.saintmarys.edu/trustees',));
+  printFilesAndImagesFromDB(array('www3drupal01'=>'www3.saintmarys.edu',));
+  printFilesAndImagesFromDB(array('campaign'=>'www3.saintmarys.edu/campaign-steering',));
+  printFilesAndImagesFromDB(array('commencement'=>'www3.saintmarys.edu/commencement-experience',));
+  printFilesAndImagesFromDB(array('library'=>'www3.saintmarys.edu/library',));
+  printFilesAndImagesFromDB(array('quest'=>'www3.saintmarys.edu/quest',));
+  printFilesAndImagesFromDB(array('tickets'=>'www3.saintmarys.edu/tickets',));
+  printFilesAndImagesFromDB(array('trustees'=>'www3.saintmarys.edu/trustees',));
 ?>
 <script type="text/javascript">
   $(function() {
-    $("tr:odd").addClass("odd");
+    $.ajaxSetup({ cache: false });
+    function restripeTables() {
+      $('tr').removeClass('odd');
+      $('tr:odd').addClass('odd');
+    }
+    $('tr:odd').addClass('odd');
+    $('body').on('click', 'a.ajaxRefresh', function(e) {
+      var $tr = $(this).parents('tr');
+      $.get(this.href, function(data) {
+        $tr.replaceWith(data);
+        restripeTables();
+      });
+      return false;
+    });
   });
 </script>
   </body>
 </html>
+<<<<<<< HEAD
+=======
+<?php
+}
+?>
+>>>>>>> release/2.0
