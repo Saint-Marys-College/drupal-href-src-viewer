@@ -1,28 +1,5 @@
 <?php
-  // header("Content-Type: text/plain");
-?>
-<!DOCTYPE html>
-<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
-<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
-<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width">
-        <link rel="stylesheet" href="style.css" type="text/css" />
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-    </head>
-    <body>
-        <!--[if lt IE 7]>
-            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
-        <![endif]-->
-
-        <!-- Add your site or application content here -->
-<?php
-function printFilesAndImagesFromDB(array $databaseName)
+function printFilesAndImagesFromDB($databaseName)
 {
   $hostnamePath = current($databaseName);
   $databaseName = key($databaseName);
@@ -137,6 +114,26 @@ function processRow($row, $databaseName, $hostnamePath)
   printRowEnd();
 }
 ?>
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+        <link rel="stylesheet" href="style.css" type="text/css" />
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+    </head>
+    <body>
+        <!--[if lt IE 7]>
+            <p class="chromeframe">You are using an outdated browser. <a href="http://browsehappy.com/">Upgrade your browser today</a> or <a href="http://www.google.com/chromeframe/?redirect=true">install Google Chrome Frame</a> to better experience this site.</p>
+        <![endif]-->
+
+        <!-- Add your site or application content here -->
 <table border="1">
   <thead>
     <tr>
@@ -169,13 +166,13 @@ function processRow($row, $databaseName, $hostnamePath)
 </table>
 
 <?php
-printFilesAndImagesFromDB(array('www3drupal01'=>'www3.saintmarys.edu',));
-printFilesAndImagesFromDB(array('campaign'=>'www3.saintmarys.edu/campaign-steering',));
-printFilesAndImagesFromDB(array('commencement'=>'www3.saintmarys.edu/commencement-experience',));
-printFilesAndImagesFromDB(array('library'=>'www3.saintmarys.edu/library',));
-printFilesAndImagesFromDB(array('quest'=>'www3.saintmarys.edu/quest',));
-printFilesAndImagesFromDB(array('tickets'=>'www3.saintmarys.edu/tickets',));
-printFilesAndImagesFromDB(array('trustees'=>'www3.saintmarys.edu/trustees',));
+  printFilesAndImagesFromDB(array('www3drupal01'=>'www3.saintmarys.edu',));
+  printFilesAndImagesFromDB(array('campaign'=>'www3.saintmarys.edu/campaign-steering',));
+  printFilesAndImagesFromDB(array('commencement'=>'www3.saintmarys.edu/commencement-experience',));
+  printFilesAndImagesFromDB(array('library'=>'www3.saintmarys.edu/library',));
+  printFilesAndImagesFromDB(array('quest'=>'www3.saintmarys.edu/quest',));
+  printFilesAndImagesFromDB(array('tickets'=>'www3.saintmarys.edu/tickets',));
+  printFilesAndImagesFromDB(array('trustees'=>'www3.saintmarys.edu/trustees',));
 ?>
 <script type="text/javascript">
   $(function() {
